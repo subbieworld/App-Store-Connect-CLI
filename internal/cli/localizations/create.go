@@ -40,6 +40,10 @@ Examples:
 		FlagSet:   fs,
 		UsageFunc: shared.DefaultUsageFunc,
 		Exec: func(ctx context.Context, args []string) error {
+			if len(args) > 0 {
+				return shared.UsageError("localizations create does not accept positional arguments")
+			}
+
 			vid := strings.TrimSpace(*versionID)
 			if vid == "" {
 				fmt.Fprintln(os.Stderr, "Error: --version is required")
@@ -50,6 +54,9 @@ Examples:
 			if localeValue == "" {
 				fmt.Fprintln(os.Stderr, "Error: --locale is required")
 				return flag.ErrHelp
+			}
+			if err := shared.ValidateBuildLocalizationLocale(localeValue); err != nil {
+				return shared.UsageError(err.Error())
 			}
 
 			client, err := shared.GetASCClient()

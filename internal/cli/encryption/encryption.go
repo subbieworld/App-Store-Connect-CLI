@@ -346,6 +346,10 @@ Examples:
 		FlagSet:   fs,
 		UsageFunc: shared.DefaultUsageFunc,
 		Exec: func(ctx context.Context, args []string) error {
+			if len(args) > 0 {
+				return shared.UsageError("encryption declarations exempt-declare does not accept positional arguments")
+			}
+
 			plistValue := strings.TrimSpace(*plistPath)
 
 			if plistValue != "" {
@@ -376,6 +380,9 @@ func updatePlistExemption(plistPath string) error {
 	info, err := os.Lstat(plistPath)
 	if err != nil {
 		return fmt.Errorf("encryption declarations exempt-declare: %w", err)
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("encryption declarations exempt-declare: refusing to read symlink %q", plistPath)
 	}
 	if info.IsDir() {
 		return fmt.Errorf("encryption declarations exempt-declare: %q is a directory", plistPath)
